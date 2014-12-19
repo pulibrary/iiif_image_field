@@ -1,0 +1,65 @@
+<?php 
+
+/**
+ *  Install file for iiif_image_field module
+ *  @author shaune
+ */
+ 
+/**
+ *  Implementation of hook_field_schema
+ *  Define the schema for the field
+ */ 
+
+
+
+function iiif_image_field_field_schema($field){
+  switch($field['type']){
+    case 'iiif_image_field' :
+      $columns = array(
+        'iiif_image_id' => array(
+          'type' => 'varchar',
+          'length' => 512,
+          'default' => ''
+        ),
+        'iiif_image_caption' => array(
+          'type' => 'varchar',
+          'length' => 1024,
+          'default' => ''
+        )
+      );
+      $indexes = array();
+    break;
+  }
+  
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes
+  );
+}
+
+
+/**
+* Implements hook_uninstall()
+*/
+
+function iiif_image_field_uninstall(){
+  watchdog("IIIF Image Field Module", "Uninstalling module and deleting fields");
+/*
+  db_query('TRUNCATE cache_field');
+*/
+  $result = db_truncate('field_data_field_iiif_image')->execute();
+  $result = db_truncate('field_revision_field_iiif_image')->execute();
+  $result = db_query("DROP TABLE field_data_field_iiif_image");
+  $result = db_query("DROP TABLE field_revision_field_iiif_image");
+
+  $field = field_info_field('iiif_image_field');
+
+  if ($field){
+    field_delete_field('iiif_image_field');
+  }
+
+  variable_del('image_server_base');
+  variable_del('image_api_version');
+
+}
+

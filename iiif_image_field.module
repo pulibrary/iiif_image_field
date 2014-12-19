@@ -1,0 +1,506 @@
+<?php 
+
+/**
+ *  Provides a simple field for easily embedding images from IIIF Image Servers (currently supports Image API 2.0 only, with plans to support previous versions)
+ *
+ *  This module is not intended to replace media - it does not allow for any local storage of images, custom players or anything else
+ *  It simply allows users to embed images from IIIF Image Servers - and provides a hook to allow other modules to provide more providers.
+ *
+ *  @author shaune
+ */
+/**
+ *  Implementation of hook_menu
+ *  create out admin page
+ */
+ function iiif_image_field_menu(){
+   return array(
+     'admin/config/media/iiif_image_field' => array(
+       'title' => 'IIIF Images',
+       'description' => 'Configuration form for the IIIF Image Field, allows one to set viewer options.',
+       'page callback' => 'drupal_get_form',
+       'page arguments' => array('iiif_image_field_get_form'),
+       'access arguments' => array('administer site configuration'),
+       'type' => MENU_NORMAL_ITEM,
+     )
+   );
+ }
+
+/**
+ * Page callback: IIIF Image Field Admin settings
+ *
+ * @see iiif_image_field_menu()
+ */
+function iiif_image_field_get_form($form, &$form_state) {
+  $form['image_server_base'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Base URL of IIIF Image Server'),
+    '#default_value' => variable_get('image_server_base', ''),
+    '#size' => 255,
+    '#maxlength' => 512,
+    '#description' => t('This is the combination of host server and prefix (path) to the service. No trailing slash.'),
+    '#required' => TRUE,
+  );
+  $form['image_api_version'] = array(
+    '#type' => 'select',
+    '#options' => array(
+        '1.1' => t('1.1'),
+        '2.0' => t('2.0')
+      ),
+    '#title' => t('Image API Version'),
+    '#default_value' => variable_get('image_api_version', '1.1'),
+    '#description' => t('Set this to the highest Image API Version your image server supports.'),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+
+
+
+/**
+ *  Implementation of hook_field_info
+ *  Define the fields we're creating
+ */
+function iiif_image_field_field_info(){
+  return array(
+    'iiif_image_field' => array(
+      'label' => 'IIIF Image',
+      'description' => 'Add Images from IIIF Image Server',
+      'settings' => array(
+        //no settings currently - not sure what we need
+      ),
+      'instance_settings' => array(
+        'allowed_types' => array('libimages')
+      ),
+      'default_widget' => 'iiif_image_field_widget',
+      'default_formatter' => 'iiif_image_field_formatter',
+    )
+  );
+}
+
+
+
+/**
+ *  Implementation of hook_field_widget_info
+ *  Define the widget for inputting 
+ */
+function iiif_image_field_field_widget_info(){
+ return array(
+   'iiif_image_field_widget' => array(
+     'label' => 'IIIF Image Embed',
+     'description' => 'Provides a IIIF Image embed field',
+     'field types' => array('iiif_image_field'),
+     'settings' => array(),
+     'behaviors' => array(
+       'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+       'default value' => FIELD_BEHAVIOR_DEFAULT
+     )
+   )
+ );
+}
+/**
+*  implementation of hook_field_widget_form
+*/
+function iiif_image_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element){
+ //don't need to check the type right now because we're only defining one
+ $element += array(
+   // '#type' => 'iiif_image_field_widget'
+    '#type' => $instance['widget']['type'],
+    '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+ );
+
+ $element['iiif_image_id'] = array(
+   '#type' => 'textfield',
+   '#title' => 'Image ID',
+   // Add some js validation/form functions
+   //'#attached' => array(
+   //  'css' => array(drupal_get_path('module', 'iiif_image_field') . '/iiif_image_field.form.css'),
+   //  'js' => array(drupal_get_path('module', 'iiif_image_field') . '/iiif_image_field.form.js'),
+   // ),
+    '#default_value' => isset($items[$delta]['iiif_image_id'])?$items[$delta]['iiif_image_id']:''
+ );
+
+  $element['iiif_image_caption'] = array(
+   '#type' => 'textfield',
+   '#title' => 'Caption/Label',
+   // Add some js validation/form functions
+   //'#attached' => array(
+   //  'css' => array(drupal_get_path('module', 'iiif_image_field') . '/iiif_image_field.form.css'),
+   //  'js' => array(drupal_get_path('module', 'iiif_image_field') . '/iiif_image_field.form.js'),
+   // ),
+    '#default_value' => isset($items[$delta]['iiif_image_caption'])?$items[$delta]['iiif_image_caption']:''
+ );
+
+ return $element;
+}
+
+function iiif_image_fields_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+ foreach ($items as $delta => $item) {
+   //check that its a valid id     
+ }
+}
+
+function iiif_image_field_field_is_empty($item, $field){
+ return empty($item);
+ if ($field['type'] == 'iiif_image_field') {
+
+    if (empty($item['iiif_image_id']))
+    {
+      return TRUE;
+    }
+ }
+    return FALSE;
+}
+
+//  IIIF Formatter Stuff
+
+function iiif_image_field_field_formatter_info() {
+ return array(
+   'iiif_image_field_formatter' => array(
+     'label' => t('IIIF Image Formatter'),
+     'field types' => array('iiif_image_field'),
+     'settings' => array(
+          'height' => '',
+          'width' => '300',
+          'region_x' => '0',
+          'region_y' => '0',
+          'region_h' => '',
+          'region_w' => '300',
+          'behavior' => 'none',
+          'display_first_only' => '0', 
+          'display_caption' => '1',
+          'rotation' => '0',
+          'quality' => 'native',
+          'format' => 'jpg'
+        ),
+     'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+   )
+ );
+}  
+
+
+/**
+*  Implements hook_field_formatter_settings_summary
+*/
+
+function iiif_image_field_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $region = $settings['region_x'] . "," . $settings['region_y'] . "," . $settings['region_h'] . "," . $settings['region_w'];
+  $dimensions = $settings['height'] . "," . $settings['width'];
+
+  if($settings['display_first_only']) { $first_only = "Only First Image"; } else { $first_only = "All Images"; }
+  if($settings['display_caption']) { $caption = "Yes"; } else { $caption = "No"; }
+  $summary = '';
+  if ($display['type'] == 'iiif_image_field_formatter') {
+    $summary = t('Behavior: @behavior', array('@behavior' => $settings['behavior']));
+    $summary .= '<br />' . t('Display: @first_only', array('@first_only' => $first_only));
+    $summary .= '<br />' . t('Display Caption: @caption', array('@caption' => $caption));
+    $summary .= '<br />' . t('Region: @region', array('@region' => $region));
+    $summary .= '<br />' . t('Dimensions: @dimensions', array('@dimensions' => $dimensions));
+    $summary .= '<br />' . t('Rotation: @rotation', array('@rotation' => $settings['rotation']));
+    $summary .= '<br />' . t('Quality: @quality', array('@quality' => $settings['quality']));
+    $summary .= '<br />' . t('Format: @format', array('@format' => $settings['format']));
+  }
+  return $summary;
+}
+
+
+/**
+ * Implements hook_field_formatter_settings_form
+ */
+function iiif_image_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $element = array();
+
+  if ($display['type'] == 'iiif_image_field_formatter') {
+    $element['behavior'] = array(
+      '#title' => t('Behavior'),
+      '#type' => 'select',
+      '#options' => array(
+        'none' => t('None'),
+        'link_to_content' => t('Link to Content'),
+        'zoom' => t('Zoom')
+      ),
+      '#default_value' => $settings['behavior'],
+      '#required' => TRUE,
+    );
+
+    $element['display_first_only'] = array(
+      '#title' => t('Display First Image Only'),
+      '#type' => 'select',
+      '#options' => array(
+        '0' => t('No'),
+        '1' => t('Yes')
+      ),
+      '#description' => t('If the field is set to be repeatable, select YES if you would like to only display one image for this View Mode. (Hint: recommended for Teaser-like views.)'),
+      '#default_value' => $settings['display_first_only'],
+      '#required' => TRUE,
+    );
+
+    $element['display_caption'] = array(
+      '#title' => t('Display Caption'),
+      '#type' => 'select',
+      '#options' => array(
+        '0' => t('No'),
+        '1' => t('Yes')
+      ),
+      '#description' => t('Choose whether or not to display captions for this view mode.'),
+      '#default_value' => $settings['display_caption'],
+      '#required' => TRUE,
+    );
+
+    $element['region_x'] = array(
+      '#type' => 'textfield',
+      '#size' => '5',
+      '#title' => t('Region X'),
+      '#description' => t('X-coordinate where cropping begins. '),
+      '#default_value' => $settings['region_x'],
+    );
+    $element['region_y'] = array(
+      '#type' => 'textfield',
+      '#size' => '5',
+      '#title' => t('Region Y'),
+      '#description' => t('Y-coordinate where cropping begins.'),
+      '#default_value' => $settings['region_y'],
+    );
+    $element['region_h'] = array(
+      '#type' => 'textfield',
+      '#size' => '5',
+      '#title' => t('Region Height'),
+      '#description' => t('Height of the cropped region.'),
+      '#default_value' => $settings['region_h'],
+    );
+    $element['region_w'] = array(
+      '#type' => 'textfield',
+      '#size' => '5',
+      '#title' => t('Region Width'),
+      '#description' => t('Width of the cropped region.'),
+      '#default_value' => $settings['region_w'],
+    );
+
+    $element['height'] = array(
+      '#type' => 'textfield',
+      '#size' => '5',
+      '#title' => t('Height'),
+      '#description' => t('Height of the image (after cropping). You can use percentages, pixels, and bangs.'),
+      '#default_value' => $settings['height'],
+    );
+    $element['width'] = array(
+      '#type' => 'textfield',
+      '#size' => '5',
+      '#title' => t('Width'),
+      '#description' => t('Width of the image (after cropping).  You can use percentages, pixels, and bangs.'),
+      '#default_value' => $settings['width'],
+    );
+
+
+    $element['rotation'] = array(
+      '#type' => 'textfield',
+      '#size' => '5',
+      '#title' => t('Rotation'),
+      '#description' => t('The rotation of the image in degrees.  You may enter a number from 0 to 360.  A background will be visible behind images where degrees are not multiples of 90. '),
+      '#default_value' => $settings['rotation'],
+    );
+
+    $element['quality'] = array(
+      '#type'           => 'select',
+      '#options'        => array(
+          'native' => t('native'),
+          'color' => t('color'),
+          'grey' => t('grey'),
+          'bitonal' => t('bitonal')
+      ),
+      '#title'          => t('Quality'),
+      '#description'    => t('The quality parameter determines the mode of the image - color, greyscale, or black and white.'),
+      '#default_value'  => $settings['quality'],
+    );
+
+    $element['format'] = array(
+      '#type'           => 'select',
+      '#options'        => array(
+          'jpg' => t('jpg'),
+          'png' => t('png'),
+          'gif' => t('gif')
+      ),
+      '#title'          => t('Format'),
+      '#description'    => t('The quality parameter determines the mode of the image - color, greyscale, or black and white.'),
+      '#default_value'  => $settings['format'],
+    );
+
+
+  }
+
+  return $element;
+
+}
+
+
+
+// Paint the field to the display
+
+/**
+*  Implements hook_field_formatter_view
+*/
+
+
+function iiif_image_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
+  // dpm($entity->nid);
+  $element = array();
+  $delta = 0;
+  /*
+  foreach ($items as $delta => $item) {
+
+  }
+  */
+     $element[$delta] = 
+      array(
+        '#markup' => theme($display['type'], 
+          array(
+            'element' => $items, 
+            'field' => $instance, 
+            'settings' => $display['settings'],
+            'entity' => $entity
+          )
+        )
+      );
+
+
+
+  return $element;
+
+}
+
+/**
+ * Implements hook_theme().
+ */
+
+function iiif_image_field_theme() {
+  return array(
+    // The theme function that our formatter uses:
+    'iiif_image_field_formatter' => array(
+      // Don't forget that all Drupal 7 theme functions have only one argument,
+      // so you declare what variables get passed within that argument instead.
+      // See http://drupal.org/node/224333#theme_changes
+      //'template' => 'iiif_image_field_formatter_iiif_image_field_formatter', 
+      'variables' => array('element' => NULL, 'field' => NULL, 'settings' => NULL, 'entity' => NULL),
+    ),
+  );
+}
+
+
+/**
+ * Theme function for 'iiif_image_field_formatter' link field formatter.
+ */
+
+function theme_iiif_image_field_formatter($variables) {
+
+  $nid = $variables['entity']->nid;
+  $node_title = $variables['entity']->title;
+  $node_path = drupal_lookup_path('alias', "node/".$nid);
+
+  // GET THE IIIF SERVER BASE URI AND API VERSION
+  $image_server_base = variable_get('image_server_base', '');
+  $image_api_version = variable_get('image_api_version', '1.1');
+
+  $elements = $variables['element'];
+  $el_length = sizeof($elements);
+  // If Display first only
+  // dpm($variables['settings']['display_first_only']);
+  if($variables['settings']['display_first_only'] && !empty($variables['element'])){
+    $el_length = 1;
+  }
+
+  // ACCOMMODATE FOR DIFFERENCES IN API VERSIONS
+  $quality = $variables['settings']['quality'];
+  if($image_api_version == '2.0'){
+    if($variables['settings']['quality'] == 'grey'){
+      $quality = 'gray';
+    }
+    else if($variables['settings']['quality'] == 'native'){
+      $default = 'default';
+    }
+  }
+
+
+  // Zoom Behavior
+  if($variables['settings']['behavior'] == 'zoom'){
+    $markup = '<div class="viewer"></div>';
+    $img_sequence = "";
+    $i = 0;
+    foreach ($elements as $delta => $el) {
+      if($i < $el_length){
+              $caption = '';
+              if($variables['settings']['display_caption']){
+                $caption = $el['iiif_image_caption'];
+              }
+              $img_sequence .= "{ id: '" . $el['iiif_image_id'] . "', label: '" . $caption . "' },";
+      }
+      $i++;
+    }
+    drupal_add_css('http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css', 'external');
+    drupal_add_css(drupal_get_path('module', 'iiif_image_field') .'/css/iiifOsdViewer.css');
+    drupal_add_css('.viewer {
+        border: 1px solid #ccc;
+        height: 600px;
+        width: 800px;
+        background: #333;
+      }', 'inline');
+    drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/openseadragon.min.js');
+    drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/jQuery.iiifOsdViewer.js', array('type' => 'file', 'scope' => 'footer', 'weight' => 2));
+    drupal_add_js("
+
+    (function ($) {
+      
+      $('.viewer').iiifOsdViewer({
+
+        data: [{
+          iiifServer: '". $image_server_base ."',
+          images: [". $img_sequence ."]}
+        ]});
+
+    }(jQuery));",
+    array('type' => 'inline', 'scope' => 'footer', 'weight' => 3));
+
+  }else{
+    // Non-zoom behaviors
+    $markup = "";
+    drupal_add_css('figcaption { color: #999999; }', 'inline');
+    $i = 0;
+    foreach ($elements as $delta => $el) {
+        if(!empty($el) && $i < $el_length){
+        
+          $figure = "";
+
+          // Basic "no behavior"
+          $figure = "<img src='" . $image_server_base . "/" . $el['iiif_image_id'] . "/full/200,/" . $variables['settings']['rotation'] . "/" . $quality . "." . $variables['settings']['format'] . "'/>";
+
+          // Link to Conent Behavior
+          $fig_num = $delta +1;
+          if($variables['settings']['behavior'] == 'link_to_content'){
+             $figure = '<a href="'. $GLOBALS["base_url"] . '/' . $node_path . '" alt="' . $node_title . '[' . $fig_num  .']">' . $figure . '</a>';
+          }
+
+          $figure = "<figure style='display:inline-block'>" . $figure; 
+
+          // If it has a caption or citation use the figure and figcaption elements
+          if($variables['settings']['display_caption'] && !empty($el['iiif_image_caption'])){
+            $figure .= "<figcaption>" . $el['iiif_image_caption'] . "</figcaption>";
+          }
+
+          $figure .= "</figure>";
+
+          $markup .= $figure;
+        }
+        $i++;
+    }
+
+  }
+
+
+  return $markup;
+}
+
+

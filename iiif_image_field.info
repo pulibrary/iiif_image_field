@@ -1,0 +1,5 @@
+name = "IIIF Images Field"
+description = "Expose a field type for embedding images from a IIIF Image Server."
+core = 7.x
+package = Media
+configure = admin/config/media/iiif_image_field
