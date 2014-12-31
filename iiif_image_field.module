@@ -131,6 +131,18 @@ function iiif_image_field_field_widget_form(&$form, &$form_state, $field, $insta
     '#default_value' => isset($items[$delta]['iiif_image_caption'])?$items[$delta]['iiif_image_caption']:''
  );
 
+  $element['iiif_image_rotation'] = array(
+   '#type' => 'textfield',
+   '#title' => 'Rotation',
+   '#size' => 5,
+   // Add some js validation/form functions
+   //'#attached' => array(
+   //  'css' => array(drupal_get_path('module', 'iiif_image_field') . '/iiif_image_field.form.css'),
+   //  'js' => array(drupal_get_path('module', 'iiif_image_field') . '/iiif_image_field.form.js'),
+   // ),
+    '#default_value' => isset($items[$delta]['iiif_image_rotation'])?$items[$delta]['iiif_image_rotation']:''
+ );
+
  return $element;
 }
 
@@ -424,6 +436,9 @@ function theme_iiif_image_field_formatter($variables) {
     }
   }
 
+  //dpm($elements);
+  // APPLY INSTANCE OVERRIDES TO VIEW MODE SETTINGS
+  $rotation = $variables['settings']['rotation'];
 
   // Zoom Behavior
   if($variables['settings']['behavior'] == 'zoom'){
@@ -431,12 +446,18 @@ function theme_iiif_image_field_formatter($variables) {
     $img_sequence = "";
     $i = 0;
     foreach ($elements as $delta => $el) {
-      if($i < $el_length){
+     
+      // APPLY INSTANCE OVERRIDES TO VIEW MODE SETTINGS
+      if(!empty($el['iiif_image_rotation'])){
+        $rotation = $el['iiif_image_rotation'];
+      }
+
+      if($i < $el_length && !empty($el['iiif_image_id'])){
               $caption = '';
               if($variables['settings']['display_caption']){
                 $caption = $el['iiif_image_caption'];
               }
-              $img_sequence .= "{ id: '" . $el['iiif_image_id'] . "', label: '" . $caption . "' },";
+              $img_sequence .= "{ id: '" . $el['iiif_image_id'] . "', label: '" . $caption . "', rotation: '" . $rotation . "' },";
       }
       $i++;
     }
@@ -449,11 +470,11 @@ function theme_iiif_image_field_formatter($variables) {
         background: #333;
       }', 'inline');
     drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/openseadragon.min.js');
-    drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/jQuery.iiifOsdViewer.js', array('type' => 'file', 'scope' => 'footer', 'weight' => 2));
+    drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/jquery.iiifOsdViewer.js', array('type' => 'file', 'scope' => 'footer', 'weight' => 2));
     drupal_add_js("
 
     (function ($) {
-      
+      $('.viewer' ).addClass( 'rotate". $rotation ."' );
       $('.viewer').iiifOsdViewer({
 
         data: [{
@@ -463,6 +484,7 @@ function theme_iiif_image_field_formatter($variables) {
 
     }(jQuery));",
     array('type' => 'inline', 'scope' => 'footer', 'weight' => 3));
+    drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/rotate.js', array('type' => 'file', 'scope' => 'footer', 'weight' => 4));
 
   }else{
     // Non-zoom behaviors
@@ -470,12 +492,18 @@ function theme_iiif_image_field_formatter($variables) {
     drupal_add_css('figcaption { color: #999999; }', 'inline');
     $i = 0;
     foreach ($elements as $delta => $el) {
-        if(!empty($el) && $i < $el_length){
+
+        // APPLY INSTANCE OVERRIDES TO VIEW MODE SETTINGS
+        if(!empty($el['iiif_image_rotation'])){
+          $rotation = $el['iiif_image_rotation'];
+        }
+        
+        if(!empty($el['iiif_image_id']) && $i < $el_length){
         
           $figure = "";
 
           // Basic "no behavior"
-          $figure = "<img src='" . $image_server_base . "/" . $el['iiif_image_id'] . "/full/200,/" . $variables['settings']['rotation'] . "/" . $quality . "." . $variables['settings']['format'] . "'/>";
+          $figure = "<img src='" . $image_server_base . "/" . $el['iiif_image_id'] . "/full/200,/" . $rotation . "/" . $quality . "." . $variables['settings']['format'] . "'/>";
 
           // Link to Conent Behavior
           $fig_num = $delta +1;

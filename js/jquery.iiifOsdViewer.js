@@ -283,6 +283,14 @@
       function loadListViewThumbs() {
         $.each(config.data, function(index, collection) {
           $.each(collection.images, function(index, image) {
+            // if rotated swap height and width values
+            
+            if(image.rotation == '90' || image.rotation == '270') {
+              var tmpH = image.height;
+              image.height = image.width;
+              image.width = tmpH;
+            }   
+            
             var imgUrl = getIiifImageUrl(collection.iiifServer, image.id, config.listView.thumbsWidth, null),
                 infoUrl = getIiifInfoUrl(collection.iiifServer, image.id),
                 $imgItem = $('<li data-alt="' + image.label + '">'),
@@ -297,6 +305,7 @@
                 'iov-height': image.height,
                 'iov-width': image.width,
                 'iov-label': image.label,
+                'iov-rotation': image.rotation,
                 'iov-stanford-only': image.stanford_only,
                 'iov-tooltip-text': image.tooltip_text,
                 'iiif-info-url': infoUrl
@@ -379,25 +388,32 @@
       }
 
       function updateView($imgItem) {
-        loadOsdInstance($imgItem.data('iiif-info-url'));
+        loadOsdInstance($imgItem.data('iiif-info-url'),$imgItem.data('iov-rotation'));
         $rightNav.show();
         $leftNav.show();
         scrollThumbsViewport($imgItem);
       }
 
-      function loadOsdInstance(infoUrl) {
+      function loadOsdInstance(infoUrl,rotation) {
+        
         if (typeof osd !== 'undefined') {
+          osd.viewport.setRotation(rotation);
           osd.open(infoUrl);
+  
         } else {
+          
           osd = OpenSeadragon({
             id:             'iov-list-view-osd',
             tileSources:    infoUrl,
             zoomInButton:   'iov-list-zoom-in',
             zoomOutButton:  'iov-list-zoom-out',
             homeButton:     'iov-list-home',
+            degrees:        rotation,
             showFullPageControl: false
           });
+          
         }
+        
       }
 
       function scrollThumbsViewport($imgItem) {

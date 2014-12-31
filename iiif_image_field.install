@@ -25,6 +25,21 @@ function iiif_image_field_field_schema($field){
           'type' => 'varchar',
           'length' => 1024,
           'default' => ''
+        ),
+        'iiif_image_height' => array(
+          'type' => 'varchar',
+          'length' => 512,
+          'default' => ''
+        ),
+        'iiif_image_width' => array(
+          'type' => 'varchar',
+          'length' => 512,
+          'default' => ''
+        ),
+        'iiif_image_rotation' => array(
+          'type' => 'varchar',
+          'length' => 512,
+          'default' => ''
         )
       );
       $indexes = array();
