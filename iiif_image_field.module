@@ -408,7 +408,7 @@ function iiif_image_field_theme() {
  */
 
 function theme_iiif_image_field_formatter($variables) {
-
+  //dpm($variables['entity']);
   $nid = $variables['entity']->nid;
   $node_title = $variables['entity']->title;
   $node_path = drupal_lookup_path('alias', "node/".$nid);
