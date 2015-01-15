@@ -1,6 +1,8 @@
 License
 ====
+
 Copyright (c) 2015, Shaun Ellis
+
 All rights reserved.
 
 This file is part of the IIIF Image Field Drupal Module.
