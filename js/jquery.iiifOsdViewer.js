@@ -18,6 +18,7 @@
  * permissions and limitations under the License.
  *
  * Image Rotation options added on 12/31/2014
+ * ToolTip Icon swapped on 1/15/2015
  * by Shaun Ellis (Princeton.edu)
  * 
  *
@@ -281,7 +282,7 @@
           '<div class="iov-list-view-controls">',
             '<a href="javascript:;" class="fa fa-plus-circle" id="iov-list-zoom-in"></a>',
             '<a href="javascript:;" class="fa fa-minus-circle" id="iov-list-zoom-out"></a>',
-            '<a href="javascript:;" class="fa fa-repeat" id="iov-list-home"></a>',
+            '<a href="javascript:;" class="fa fa-picture-o" id="iov-list-home"></a>',
           '</div>'
         ].join(''));
 
@@ -418,7 +419,7 @@
           osd.open(infoUrl);
   
         } else {
-          
+          OpenSeadragon.setString("Tooltips.Home","Fit to frame");
           osd = OpenSeadragon({
             id:             'iov-list-view-osd',
             tileSources:    infoUrl,
