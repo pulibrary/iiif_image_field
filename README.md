@@ -1,7 +1,7 @@
 iiif_image_field
 ================
 
-Drupal module for adding IIIF Images to content types.
+Drupal module for adding IIIF Images to content types. Supports API versions 1.0 or 2.0 (no mixing, as of yet). 
 
 1. Enable the module via drush `drush en iiif_image_field`.
 2. You can configure your server and API version via the Modules manager or Admin > Config > Media > IIIF Image Field
