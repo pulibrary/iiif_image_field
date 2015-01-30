@@ -17,7 +17,7 @@
  * KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  *
- * Image Rotation options added on 12/31/2014
+ * Image Rotation options added on 12/31/2014 and
  * ToolTip Icon swapped on 1/15/2015
  * by Shaun Ellis (Princeton.edu)
  * 
@@ -215,10 +215,11 @@
       return str.split("").reduce(function(a,b) { a = ((a << 5) - a) + b.charCodeAt(0); return a & a}, 0);
     }
 
-    function getIiifImageUrl(server, id, width, height) {
+    function getIiifImageUrl(server, id, width, height, api) {
       width = width || '';
       height = height || '';
-      return [server, id, 'full/' + width + ',' + height, '0/native.jpg'].join('/');
+      filename = (api === '1.1') ? 'native' : 'default';
+      return [server, id, 'full/' + width + ',' + height, '0/' + filename + '.jpg'].join('/');
     }
 
     function setViewHeight($view) {
@@ -301,15 +302,8 @@
       function loadListViewThumbs() {
         $.each(config.data, function(index, collection) {
           $.each(collection.images, function(index, image) {
-            // if rotated swap height and width values
             
-            if(image.rotation == '90' || image.rotation == '270') {
-              var tmpH = image.height;
-              image.height = image.width;
-              image.width = tmpH;
-            }   
-            
-            var imgUrl = getIiifImageUrl(collection.iiifServer, image.id, config.listView.thumbsWidth, null),
+            var imgUrl = getIiifImageUrl(collection.iiifServer, image.id, config.listView.thumbsWidth, null, collection.iiifImageAPI),
                 infoUrl = getIiifInfoUrl(collection.iiifServer, image.id),
                 $imgItem = $('<li data-alt="' + image.label + '">'),
                 $img = $('<img>'),
@@ -514,7 +508,7 @@
         $.each(config.data, function(index, collection) {
           $.each(collection.images, function(index, image) {
             var imgWidth = Math.round((image.width / image.height) * config.galleryView.thumbsHeight);
-                imgUrl = getIiifImageUrl(collection.iiifServer, image.id, imgWidth, config.galleryView.thumbsHeight),
+                imgUrl = getIiifImageUrl(collection.iiifServer, image.id, imgWidth, config.galleryView.thumbsHeight, collection.iiifImageAPI),
                 $img = $('<img>'),
                 $imgItem = $('<li data-alt="' + image.label + '">');
 
@@ -599,6 +593,7 @@
               .data('iov-height', image.height)
               .data('iov-width', image.width)
               .data('iov-iiif-server', collection.iiifServer)
+              .data('iov-iiif-image-api', collection.iiifImageAPI)
               .data('iov-iiif-image-id', image.id);
 
             $imgsList.append($imgItem.append('<a href="javascript:;"><img alt="' + image.label + '" src=""></a>'));
@@ -631,10 +626,11 @@
         $.each(imgsList, function(index, imgItem) {
           var $imgItem = $(imgItem),
               iiifServer = $imgItem.data('iov-iiif-server'),
+              iiifImageAPI = $imgItem.data('iov-iiif-image-api'),
               id = $imgItem.data('iov-iiif-image-id'),
               $img = $imgItem.find('img'),
               imgWidth =  Math.round(($imgItem.data('iov-width') * height) / $imgItem.data('iov-height')),
-              imgUrl = getIiifImageUrl(iiifServer, id, imgWidth, height);
+              imgUrl = getIiifImageUrl(iiifServer, id, imgWidth, height, iiifImageAPI);
 
           $img
             .height(height)

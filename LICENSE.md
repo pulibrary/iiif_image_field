@@ -21,3 +21,5 @@ This file is part of the IIIF Image Field Drupal Module.
     along with IIIF Image Field.  If not, see <http://www.gnu.org/licenses/>.
 
 The IIIFOsdViewer (```js/jquery.iiifOsdViewer```) is licensed under the Apache License, Version 2.0, and [allowed for inclusion and redistribution under the GPLv3](http://www.apache.org/licenses/GPL-compatibility.html)
+
+OpenSeadragon is released under the New BSD license. For details, see: http://openseadragon.github.io/license/
