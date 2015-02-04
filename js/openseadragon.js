@@ -1,5 +1,5 @@
 //! OpenSeadragon 1.2.1
-//! Built on 2015-01-30
+//! Built on 2015-02-04
 //! Git commit: v1.2.1-1-0b5b776
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
