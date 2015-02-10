@@ -17,7 +17,7 @@
 
 .iov-menu-bar {
   overflow: auto;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .iov-menu-bar h2.iov-item-count {
@@ -100,7 +100,7 @@
   position: absolute;
   text-decoration: none;
   top: 50%;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .iov .iov-list-view-left-nav:hover, .iov .iov-list-view-right-nav:hover {
@@ -139,7 +139,7 @@
   position: absolute;
   right: 10px;
   top: 35px;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .iov-menu-bar a {
