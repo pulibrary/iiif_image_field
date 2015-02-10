@@ -1,7 +1,7 @@
 iiif_image_field
 ================
 
-Drupal module for adding IIIF Images to content types. Supports API versions 1.0 or 2.0 (no mixing, as of yet).  Currently on Drupal.org as sandbox project.  Currently under review for approval as official module. 
+Drupal module for adding IIIF Images to content types. Supports API versions 1.0 or 2.0 (no mixing, as of yet).  Currently on Drupal.org as sandbox project and under review for approval as official module. 
 
 __How to configure the module:__
 
