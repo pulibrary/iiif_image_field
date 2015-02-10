@@ -359,14 +359,9 @@ function iiif_image_field_field_formatter_settings_form($field, $instance, $view
 
 
 function iiif_image_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
-  // dpm($entity->nid);
   $element = array();
   $delta = 0;
-  /*
-  foreach ($items as $delta => $item) {
 
-  }
-  */
      $element[$delta] = 
       array(
         '#markup' => theme($display['type'], 
@@ -408,19 +403,24 @@ function iiif_image_field_theme() {
  */
 
 function theme_iiif_image_field_formatter($variables) {
-  //dpm($variables['entity']);
+  
   $nid = $variables['entity']->nid;
   $node_title = $variables['entity']->title;
   $node_path = drupal_lookup_path('alias', "node/".$nid);
+  // assume path_auto, but fall back to node id
+  if(empty($node_path)){
+    $node_path = "node/".$nid;
+  }
 
   // GET THE IIIF SERVER BASE URI AND API VERSION
   $image_server_base = variable_get('image_server_base', '');
   $image_api_version = variable_get('image_api_version', '1.1');
 
+
   $elements = $variables['element'];
   $el_length = sizeof($elements);
   // If Display first only
-  // dpm($variables['settings']['display_first_only']);
+
   if($variables['settings']['display_first_only'] && !empty($variables['element'])){
     $el_length = 1;
   }
@@ -432,11 +432,11 @@ function theme_iiif_image_field_formatter($variables) {
       $quality = 'gray';
     }
     else if($variables['settings']['quality'] == 'native'){
-      $default = 'default';
+      $quality = 'default';
     }
   }
 
-  //dpm($elements);
+
   // APPLY INSTANCE OVERRIDES TO VIEW MODE SETTINGS
   $rotation = $variables['settings']['rotation'];
 
