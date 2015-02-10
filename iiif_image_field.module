@@ -461,7 +461,8 @@ function theme_iiif_image_field_formatter($variables) {
       }
       $i++;
     }
-    //drupal_add_css('http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css', 'external');
+
+    drupal_add_css(drupal_get_path('module', 'iiif_image_field') .'/css/font-awesome.min.css');
     drupal_add_css(drupal_get_path('module', 'iiif_image_field') .'/css/iiifOsdViewer.css');
     drupal_add_css('.viewer {
         border: 1px solid #ccc;
@@ -469,6 +470,8 @@ function theme_iiif_image_field_formatter($variables) {
         width: 800px;
         background: #333;
       }', 'inline');
+
+    drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/jquery-1.11.2.min.js');
     drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/openseadragon.min.js');
     drupal_add_js(drupal_get_path('module', 'iiif_image_field') .'/js/jquery.iiifOsdViewer.js', array('type' => 'file', 'scope' => 'footer', 'weight' => 2));
     drupal_add_js("
